@@ -63,7 +63,7 @@ def suma(n1,n2):
     suma = n1 +n2
     return f"<p>{n1} mas {n2} da {suma}</p>"
 
-###--------------------CONEXION A BASE DE DATOS----------------------------------
+###--------------------CONEXIÒN A BASE DE DATOS----------------------------------
 
 def abrirConexion():
     global db
@@ -88,5 +88,83 @@ def obterGente():
     fila = [dict(row) for row in resultado]
     return str(fila)
 
+db = None
 
 
+def dict_factory(cursor, row):
+  """Arma un diccionario con los valores de la fila."""
+  fields = [column[0] for column in cursor.description]
+  return {key: value for key, value in zip(fields, row)} #Devuelve un diccionario
+
+
+def abrirConexion():
+   global db
+   db = sqlite3.connect("instance/datos.sqlite")
+   db.row_factory = dict_factory
+
+
+def cerrarConexion():
+   global db
+   db.close()
+   db = None
+
+
+@app.route("/test-db")
+def testDB():
+   abrirConexion()
+   cursor = db.cursor()
+   cursor.execute("SELECT COUNT(*) AS cant FROM usuarios; ")
+   res = cursor.fetchone() 
+   registros = res["cant"] #Saca el valor usando la clave
+   cerrarConexion()
+   return f"Hay {registros} registros en la tabla usuarios"
+
+
+#----------Ejercicio----------
+'''
+1 - Insertar un usuario nuevo (2 parámetros: nombre, mail)
+2 - Borre un usuario (1 parámetro: id)
+3 - Nombre y mail usuario (1 parámetro: id)
+4 - Cambiar el mail (nombre, mail -> con el nombre que coincida)
+'''
+# 1
+@app.route("/insertar/<string:nombre>/<string:mail>")
+def insertar_usuario(nombre, mail):
+    global db
+    abrirConexion() #Tener conexion abierta el minimo tiempo posible
+    db.execute("INSERT INTO usuarios(usuario,email) VALUES (?,?);", (nombre, mail))
+    db.commit()
+    cerrarConexion()
+    return f"Hay un nuevo registro con el nombre {nombre} y el mail {mail}"
+
+# 3
+@app.route("/mostrar/<int:id>")
+def mostrar_usuario(id):
+    global db
+    abrirConexion()
+    cursor = db.cursor()
+    cursor.execute("SELECT usuario, email FROM usuarios WHERE id = ?", (id,)) #Indicamos con una coma que es una tupla
+    res = cursor.fetchone() 
+    cerrarConexion()
+    return f"nombre: {res['usuario']}, email: {res['email']}"
+
+# 2
+@app.route("/borrar/<int:id>")
+def borrar_usuario(id):
+    global db
+    abrirConexion()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM usuarios WHERE id = ?", (id,)) #Indicar siempre dónde hay que borrar, si le pongo solo FROM tabla (borra toda la tabla)
+    #res = cursor.fetchone() 
+    db.commit()
+    cerrarConexion()
+    return f"El usuario eliminado tiene el N* de ID: {id}"
+
+# 4
+@app.route("/cambio/<string:nombre>/<string:email>")
+def cambiar_mail(nombre, email):
+    global db
+    abrirConexion()
+
+    cerrarConexion()
+    return f"El email cambiado es: {res} por el email {email}"
