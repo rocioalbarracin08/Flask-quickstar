@@ -12,8 +12,8 @@ db = None
 @app.route("/") #Devuelve lo que ve en el navegador
 def principal():
     url_consulta = url_for("consultaxn", nombre='Rocío') #usamos el def "consultaxn" y con una coma ponemos el parametro que recibe
-    url_dado = url_for("dado", caras=6) # Variables que guardan...
-    url_logo = url_for("static", filename = "static/imagen.png")
+    url_dado = url_for("dado", caras=6) # 1ro: nos fijamos en el def - 2do: nos fijamos en el argumento
+    url_logo = url_for("static", filename = "static/imagen.png") 
     return f"""
         <a href="{url_consulta}">Pregunta por nombre</a>
         <br>
@@ -89,7 +89,6 @@ def obterGente():
     return str(fila)
 
 db = None
-
 
 def dict_factory(cursor, row):
   """Arma un diccionario con los valores de la fila."""
@@ -190,3 +189,25 @@ def datos_plantillas(id):
         telefono  = res['telefono']
         direccion = res['direccion']     
     return render_template("datos.html", id=id, usuario=usuario, email=email, telefono=telefono, direccion=direccion)
+
+@app.route("/usuarios/")
+def usuarios():
+    global db
+    abrirConexion()
+    cursor = db.cursor()
+    cursor.execute("SELECT usuario FROM usuarios")
+    res    = cursor.fetchall()
+    cerrarConexion()
+    return render_template("listaUsuarios.html", usuarios = [res]) # Mostrar el registro
+
+#plantilla
+@app.route("/usuarios-mal/") #Este esta mal
+def mostrar():
+    #url_datos  = url_for("lista_usuarios")
+    url_datos1 = url_for("datos_plantillas", id = 1 )
+    url_datos2 = url_for("datos_plantillas", id = 2 )
+    return f'''
+       <a href="{url_datos1}">Andrés</a>
+       <br>
+       <a href="{url_datos2}">Tomás</a>    
+'''
