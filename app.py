@@ -1,4 +1,4 @@
-from flask import Flask, url_for
+from flask import Flask, render_template ,url_for
 import sqlite3
 
 app = Flask(__name__)
@@ -161,10 +161,26 @@ def borrar_usuario(id):
     return f"El usuario eliminado tiene el N* de ID: {id}"
 
 # 4
-@app.route("/cambio/<string:nombre>/<string:email>")
-def cambiar_mail(nombre, email):
+#@app.route("/cambio/<string:nombre>/<string:email>")
+#def cambiar_mail(nombre, email):
+    #global db
+    #abrirConexion()
+
+    #cerrarConexion()
+    #return f"El email cambiado es: {res} por el email {email}"
+
+# ---------------------------------------------------------------------------------07/05/2025---------------
+@app.route("/mostrar-datos-plantilla/<int:id>")
+def datos_plantillas(id):
     global db
     abrirConexion()
-
+    cursor = db.cursor()
+    cursor.execute("SELECT id, usuario, email FROM usuarios WHERE id = ?;", (id,))
+    res    = cursor.fetchone()
     cerrarConexion()
-    return f"El email cambiado es: {res} por el email {email}"
+    usuario = None
+    email   = None
+    if res != None:
+        usuario = res['usuario']
+        email   = res['email']
+    return render_template("dado.html", id=id, usuario=usuario, email=email)
